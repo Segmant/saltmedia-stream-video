@@ -134,7 +134,6 @@ class SM_Stream_Container_Background {
 			'q'      => $quality,
 			'mobile' => ! empty( $settings['sm_stream_bg_play_on_mobile'] ) && 'yes' === $settings['sm_stream_bg_play_on_mobile'],
 			'loop'   => empty( $settings['sm_stream_bg_play_once'] ) || 'yes' !== $settings['sm_stream_bg_play_once'],
-			'bg'     => true,
 		);
 
 		SM_Stream_Elementor_Helpers::enqueue();

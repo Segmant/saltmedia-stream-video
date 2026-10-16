@@ -1,17 +1,18 @@
 /**
  * Salt Media Stream Video: plays Cloudflare Stream HLS in [data-sm-stream] elements.
  *
- * - hls.js (bundled) is loaded only when a video actually starts, and only in
- *   browsers that can use it; otherwise the browser's native HLS is used
- *   (iPhone/Safari), otherwise the poster stays.
- * - Background/autoplay videos start when scrolled into view and pause when out
- *   of view. Click-to-play videos download nothing until played.
+ * Every video autoplays muted with no player controls:
+ * - It starts when scrolled into view and pauses when out of view; nothing
+ *   downloads before it is in view.
+ * - hls.js (bundled) is loaded on first use, in browsers that can run it;
+ *   otherwise the browser's native HLS is used (iPhone/Safari); otherwise the
+ *   poster stays.
  * - Quality is capped per Elementor device ("Max quality"), or fitted to the
  *   player size when set to Auto.
- * - Visitors with reduced motion or data saver on get the poster only for
- *   autoplay videos.
+ * - Visitors with reduced motion or data saver on get the poster only, as do
+ *   phones when "Play on mobile" is off.
  *
- * Each element gets data-sm-state (loading, playing, poster-only, native, error)
+ * Each element gets data-sm-state (loading, playing, paused, native, poster-only, error)
  * to make debugging easy.
  */
 ( function () {
@@ -41,11 +42,6 @@
 		return hlsPromise;
 	}
 
-	function elementorBreakpoints() {
-		var ef = window.elementorFrontend;
-		return ef && ef.breakpoints ? ef.breakpoints : null;
-	}
-
 	function deviceMode() {
 		var ef = window.elementorFrontend;
 		try {
@@ -61,10 +57,10 @@
 	}
 
 	function deviceOrder() {
-		var bp = elementorBreakpoints();
+		var ef = window.elementorFrontend;
 		try {
-			if ( bp && bp.getActiveBreakpointsList ) {
-				var list = bp.getActiveBreakpointsList( { largeToSmall: true, withDesktop: true } );
+			if ( ef && ef.breakpoints && ef.breakpoints.getActiveBreakpointsList ) {
+				var list = ef.breakpoints.getActiveBreakpointsList( { largeToSmall: true, withDesktop: true } );
 				if ( list && list.length ) {
 					return list;
 				}
@@ -136,20 +132,16 @@
 			return;
 		}
 
-		var autoplay = !! ( opts.bg || opts.autoplay );
-
-		if ( autoplay && ( reduceMotion || saveData || ( isMobile() && ! opts.mobile ) ) ) {
+		if ( reduceMotion || saveData || ( isMobile() && ! opts.mobile ) ) {
 			setState( el, 'poster-only' );
 			return;
 		}
 
-		if ( autoplay ) {
-			video.muted = true;
-			video.setAttribute( 'muted', '' );
-		}
+		video.muted = true;
+		video.setAttribute( 'muted', '' );
+		video.controls = false;
 		video.loop = !! opts.loop;
 
-		var hls = null;
 		var ready = null;
 
 		function setup() {
@@ -171,24 +163,19 @@
 				var cap = 'auto' === quality ? 0 : parseInt( quality, 10 ) || 0;
 
 				if ( Hls && Hls.isSupported() ) {
-					var parsed = false;
-					var wantLoad = autoplay;
-					hls = new Hls( {
+					var hls = new Hls( {
 						capLevelToPlayerSize: ! cap,
 						// Loading starts only after the quality cap is applied (below).
 						autoStartLoad: false,
 						// Short loops replay from memory instead of downloading again.
 						backBufferLength: opts.loop ? Infinity : 30,
-						maxBufferLength: autoplay ? 12 : 30
+						maxBufferLength: 12
 					} );
 					hls.on( Hls.Events.MANIFEST_PARSED, function () {
 						if ( cap ) {
 							hls.autoLevelCapping = cappedLevel( hls.levels, cap );
 						}
-						parsed = true;
-						if ( wantLoad ) {
-							hls.startLoad();
-						}
+						hls.startLoad();
 					} );
 					hls.on( Hls.Events.ERROR, function ( event, data ) {
 						if ( ! data.fatal ) {
@@ -205,14 +192,6 @@
 					} );
 					hls.loadSource( opts.src );
 					hls.attachMedia( video );
-					if ( ! autoplay ) {
-						video.addEventListener( 'play', function () {
-							wantLoad = true;
-							if ( parsed ) {
-								hls.startLoad();
-							}
-						}, { once: true } );
-					}
 					return true;
 				}
 
@@ -230,21 +209,7 @@
 		}
 
 		video.addEventListener( 'playing', function () { setState( el, 'playing' ); } );
-
-		if ( ! autoplay ) {
-			// Click to play: prepare the player once it's near the screen (manifest
-			// only), segments load when the visitor presses play.
-			observe( el, function ( visible ) {
-				if ( visible ) {
-					setup().then( function ( ok ) {
-						if ( ok && video.paused && 'native' !== el.getAttribute( 'data-sm-state' ) ) {
-							setState( el, 'ready' );
-						}
-					} );
-				}
-			} );
-			return;
-		}
+		video.addEventListener( 'pause', function () { setState( el, 'paused' ); } );
 
 		observe( el, function ( visible ) {
 			if ( visible ) {

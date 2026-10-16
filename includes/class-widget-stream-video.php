@@ -1,8 +1,7 @@
 <?php
 /**
- * "Stream Video" widget: a Cloudflare Stream HLS video with optional controls,
- * sound, autoplay and loop. Nothing downloads until the video is visible
- * (autoplay) or played (click to play).
+ * "Stream Video" widget: a Cloudflare Stream HLS video that autoplays muted,
+ * loops and has no player controls. Nothing downloads until it scrolls into view.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -54,35 +53,17 @@ class SM_Stream_Video_Widget extends Widget_Base {
 
 		$this->add_control( 'source', SM_Stream_Elementor_Helpers::source_control_args( __( 'Video', 'saltmedia-stream-video' ) ) );
 
-		$this->add_control( 'autoplay', array(
-			'label'       => __( 'Autoplay', 'saltmedia-stream-video' ),
+		$this->add_control( 'play_on_mobile', array(
+			'label'       => __( 'Play on mobile', 'saltmedia-stream-video' ),
 			'type'        => Controls_Manager::SWITCHER,
 			'default'     => 'yes',
-			'description' => __( 'Autoplaying videos are always muted (browser rule) and start when scrolled into view.', 'saltmedia-stream-video' ),
-		) );
-
-		$this->add_control( 'play_on_mobile', array(
-			'label'     => __( 'Autoplay on mobile', 'saltmedia-stream-video' ),
-			'type'      => Controls_Manager::SWITCHER,
-			'default'   => 'yes',
-			'condition' => array( 'autoplay' => 'yes' ),
-		) );
-
-		$this->add_control( 'mute', array(
-			'label'     => __( 'Mute', 'saltmedia-stream-video' ),
-			'type'      => Controls_Manager::SWITCHER,
-			'condition' => array( 'autoplay!' => 'yes' ),
+			'description' => __( 'Off: phones show the poster only and download no video.', 'saltmedia-stream-video' ),
 		) );
 
 		$this->add_control( 'loop', array(
 			'label'   => __( 'Loop', 'saltmedia-stream-video' ),
 			'type'    => Controls_Manager::SWITCHER,
 			'default' => 'yes',
-		) );
-
-		$this->add_control( 'controls', array(
-			'label' => __( 'Player controls', 'saltmedia-stream-video' ),
-			'type'  => Controls_Manager::SWITCHER,
 		) );
 
 		$this->add_responsive_control( 'quality', array(
@@ -162,28 +143,19 @@ class SM_Stream_Video_Widget extends Widget_Base {
 			return;
 		}
 
-		$quality  = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'quality' );
-		$poster   = SM_Stream_Elementor_Helpers::poster_url( $source, $settings['poster'], isset( $settings['poster_image'] ) ? $settings['poster_image'] : array(), $quality );
-		$autoplay = 'yes' === $settings['autoplay'];
-		$muted    = $autoplay || 'yes' === $settings['mute'];
+		$quality = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'quality' );
+		$poster  = SM_Stream_Elementor_Helpers::poster_url( $source, $settings['poster'], isset( $settings['poster_image'] ) ? $settings['poster_image'] : array(), $quality );
 
 		$config = array(
-			'kind'     => $source['kind'],
-			'src'      => $source['src'],
-			'q'        => $quality,
-			'autoplay' => $autoplay,
-			'mobile'   => ! $autoplay || 'yes' === $settings['play_on_mobile'],
-			'loop'     => 'yes' === $settings['loop'],
-			'bg'       => false,
+			'kind'   => $source['kind'],
+			'src'    => $source['src'],
+			'q'      => $quality,
+			'mobile' => 'yes' === $settings['play_on_mobile'],
+			'loop'   => 'yes' === $settings['loop'],
 		);
 
-		$attrs = array( 'playsinline', 'preload="none"' );
-		if ( $muted ) {
-			$attrs[] = 'muted';
-		}
-		if ( 'yes' === $settings['controls'] ) {
-			$attrs[] = 'controls';
-		}
+		// Always autoplaying, muted, no player controls.
+		$attrs = array( 'muted', 'playsinline', 'disableremoteplayback', 'preload="none"' );
 		if ( $config['loop'] ) {
 			$attrs[] = 'loop';
 		}
