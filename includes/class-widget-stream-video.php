@@ -143,13 +143,19 @@ class SM_Stream_Video_Widget extends Widget_Base {
 			return;
 		}
 
-		$quality = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'quality' );
-		$poster  = SM_Stream_Elementor_Helpers::poster_url( $source, $settings['poster'], isset( $settings['poster_image'] ) ? $settings['poster_image'] : array(), $quality );
+		$quality     = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'quality' );
+		$poster_img  = isset( $settings['poster_image'] ) ? $settings['poster_image'] : array();
+		$poster_cfg  = SM_Stream_Elementor_Helpers::poster_config( $source, $settings['poster'], $poster_img );
+		$poster_attr = SM_Stream_Elementor_Helpers::eager_poster_attr(
+			$poster_cfg,
+			SM_Stream_Elementor_Helpers::poster_url( $source, $settings['poster'], $poster_img, $quality )
+		);
 
 		$config = array(
 			'kind'   => $source['kind'],
 			'src'    => $source['src'],
 			'q'      => $quality,
+			'poster' => $poster_cfg,
 			'mobile' => 'yes' === $settings['play_on_mobile'],
 			'loop'   => 'yes' === $settings['loop'],
 		);
@@ -159,8 +165,8 @@ class SM_Stream_Video_Widget extends Widget_Base {
 		if ( $config['loop'] ) {
 			$attrs[] = 'loop';
 		}
-		if ( $poster ) {
-			$attrs[] = 'poster="' . esc_url( $poster ) . '"';
+		if ( $poster_attr ) {
+			$attrs[] = trim( $poster_attr );
 		}
 
 		printf(

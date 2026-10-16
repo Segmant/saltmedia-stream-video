@@ -132,6 +132,8 @@
 			return;
 		}
 
+		lazyPoster( el, video, opts.poster );
+
 		if ( reduceMotion || saveData || ( isMobile() && ! opts.mobile ) ) {
 			setState( el, 'poster-only' );
 			return;
@@ -228,7 +230,33 @@
 		} );
 	}
 
-	function observe( el, callback ) {
+	/**
+	 * Posters other than the first video's are loaded here, once the video is
+	 * near the screen, sized to how big it is actually shown. Stream thumbnails
+	 * are cropped to that size; sizes are rounded up to 80px steps so they cache well.
+	 */
+	function lazyPoster( el, video, poster ) {
+		if ( ! poster || ! poster.src || video.getAttribute( 'poster' ) ) {
+			return;
+		}
+		observe( el, function ( visible ) {
+			if ( ! visible || video.getAttribute( 'poster' ) ) {
+				return;
+			}
+			var src = poster.src;
+			if ( poster.stream ) {
+				var rect = el.getBoundingClientRect();
+				var dpr = Math.min( window.devicePixelRatio || 1, 2 );
+				var step = function ( n ) { return Math.min( 1920, Math.ceil( n * dpr / 80 ) * 80 ); };
+				if ( rect.width > 0 && rect.height > 0 ) {
+					src += ( src.indexOf( '?' ) > -1 ? '&' : '?' ) + 'width=' + step( rect.width ) + '&height=' + step( rect.height ) + '&fit=crop';
+				}
+			}
+			video.setAttribute( 'poster', src );
+		}, '600px 0px' );
+	}
+
+	function observe( el, callback, margin ) {
 		if ( ! ( 'IntersectionObserver' in window ) ) {
 			callback( true );
 			return;
@@ -237,7 +265,7 @@
 			entries.forEach( function ( entry ) {
 				callback( entry.isIntersecting );
 			} );
-		}, { rootMargin: '200px 0px' } );
+		}, { rootMargin: margin || '200px 0px' } );
 		io.observe( el );
 	}
 

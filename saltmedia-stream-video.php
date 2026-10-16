@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Salt Media Stream Video
  * Description:       Cloudflare Stream HLS video for Elementor: a "Stream video background" option on containers and a "Stream Video" widget. Paste any Stream link or ID (or use an ACF dynamic tag); videos play adaptively via HLS with quality caps, posters and lazy start.
- * Version:           0.1.1
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Salt Media
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SM_STREAM_VERSION', '0.1.1' );
+define( 'SM_STREAM_VERSION', '0.2.0' );
 define( 'SM_STREAM_FILE', __FILE__ );
 define( 'SM_STREAM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SM_STREAM_URL', plugin_dir_url( __FILE__ ) );

@@ -103,6 +103,37 @@ class SM_Stream_Elementor_Helpers {
 		return SM_Stream_Source::poster_url( $source, $height );
 	}
 
+	/**
+	 * How many videos on this page still get their poster in the HTML. The first
+	 * one is usually the header (often the LCP element), so it shows straight
+	 * away; later posters are loaded by the script near the screen and sized to fit.
+	 */
+	private static $eager_posters_left = 1;
+
+	/** Poster details for the script: the base URL, and whether it is a Stream thumbnail (resizable). */
+	public static function poster_config( array $source, $mode, $image ) {
+		if ( 'none' === $mode ) {
+			return null;
+		}
+		if ( 'custom' === $mode ) {
+			return ! empty( $image['url'] ) ? array( 'src' => $image['url'], 'stream' => false ) : null;
+		}
+		$base = SM_Stream_Source::poster_url( $source, 0 );
+		if ( '' === $base ) {
+			return null;
+		}
+		return array( 'src' => strtok( $base, '?' ), 'stream' => true );
+	}
+
+	/** The poster attribute for the first video on the page, or nothing for the rest. */
+	public static function eager_poster_attr( $poster_config, $eager_url ) {
+		if ( ! $poster_config || '' === $eager_url || self::$eager_posters_left < 1 ) {
+			return '';
+		}
+		self::$eager_posters_left--;
+		return ' poster="' . esc_url( $eager_url ) . '"';
+	}
+
 	public static function enqueue() {
 		wp_enqueue_script( 'sm-stream-video' );
 		wp_enqueue_style( 'sm-stream-video' );

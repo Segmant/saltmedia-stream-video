@@ -120,18 +120,20 @@ class SM_Stream_Container_Background {
 			return null;
 		}
 
-		$quality = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'sm_stream_bg_quality' );
-		$poster  = SM_Stream_Elementor_Helpers::poster_url(
-			$source,
-			isset( $settings['sm_stream_bg_poster'] ) ? $settings['sm_stream_bg_poster'] : 'stream',
-			isset( $settings['sm_stream_bg_poster_image'] ) ? $settings['sm_stream_bg_poster_image'] : array(),
-			$quality
+		$quality     = SM_Stream_Elementor_Helpers::responsive_values( $settings, 'sm_stream_bg_quality' );
+		$poster_mode = isset( $settings['sm_stream_bg_poster'] ) ? $settings['sm_stream_bg_poster'] : 'stream';
+		$poster_img  = isset( $settings['sm_stream_bg_poster_image'] ) ? $settings['sm_stream_bg_poster_image'] : array();
+		$poster_cfg  = SM_Stream_Elementor_Helpers::poster_config( $source, $poster_mode, $poster_img );
+		$poster_attr = SM_Stream_Elementor_Helpers::eager_poster_attr(
+			$poster_cfg,
+			SM_Stream_Elementor_Helpers::poster_url( $source, $poster_mode, $poster_img, $quality )
 		);
 
 		$config = array(
 			'kind'   => $source['kind'],
 			'src'    => $source['src'],
 			'q'      => $quality,
+			'poster' => $poster_cfg,
 			'mobile' => ! empty( $settings['sm_stream_bg_play_on_mobile'] ) && 'yes' === $settings['sm_stream_bg_play_on_mobile'],
 			'loop'   => empty( $settings['sm_stream_bg_play_once'] ) || 'yes' !== $settings['sm_stream_bg_play_once'],
 		);
@@ -143,7 +145,7 @@ class SM_Stream_Container_Background {
 		return sprintf(
 			'<div class="elementor-background-video-container sm-stream-bg" aria-hidden="true" data-sm-stream="%1$s"><video class="sm-stream-bg__video" muted playsinline disableremoteplayback preload="none"%2$s style="position:absolute;inset:0;width:100%%;height:100%%;max-width:none;margin:0;transform:none;object-fit:cover"></video></div>',
 			esc_attr( wp_json_encode( $config ) ),
-			$poster ? ' poster="' . esc_url( $poster ) . '"' : ''
+			$poster_attr
 		);
 	}
 }

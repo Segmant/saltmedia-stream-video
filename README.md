@@ -17,7 +17,7 @@ Paste any Stream link (watch, iframe, manifest or download link), a bare video I
   - Show the poster only when the visitor has asked for reduced motion or turned on data saver.
   - Play on phones by default; turn "Play on mobile" off to show the poster only.
 - **Max quality (per Elementor device):** caps the resolution, for example 360p for cards. "Auto" picks the best quality for the size shown.
-- **Poster:** the Stream thumbnail (the time set in the Stream dashboard), a custom image, or none.
+- **Poster:** the Stream thumbnail (the time set in the Stream dashboard), a custom image, or none. Only the first video on a page has its poster in the HTML (it is usually the header). Every other poster loads when its video is about 600px from the screen, and Stream thumbnails are cropped to the size the video is shown at.
 - **Looping:** short loops replay from memory, so Stream bills only the first play.
 - **Debugging:** each player element carries `data-sm-state`: `loading`, `playing`, `paused`, `native`, `poster-only` or `error`.
 
