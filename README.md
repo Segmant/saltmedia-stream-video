@@ -3,7 +3,7 @@
 Cloudflare Stream HLS video for Elementor, without MP4s.
 
 - **Stream video background**: an option on every Elementor container (Style tab). It plays a Stream video behind the container, reusing Elementor's background-video layer, so overlays, borders and stacking work as normal.
-- **Stream Video widget**: a video with optional controls, sound, autoplay and loop.
+- **Stream Video widget**: by default an autoplaying, muted, looping video with no player controls (like a Stream embed with `autoplay&muted&loop&controls=false`). Controls, sound and click-to-play can be switched on.
 
 Paste any Stream link (watch, iframe, manifest or download link), a bare video ID, or an `.m3u8` URL. Or use Elementor's dynamic tag icon to pull the link from an ACF field.
 
@@ -15,7 +15,7 @@ Paste any Stream link (watch, iframe, manifest or download link), a bare video I
   - Start when scrolled into view, and pause when out of view.
   - Are always muted.
   - Show the poster only when the visitor has asked for reduced motion or turned on data saver.
-  - Can show the poster only on phones, using "Play on mobile".
+  - Play on phones by default; turn "Play on mobile" off to show the poster only.
 - **Click-to-play videos:** download no video until the visitor presses play.
 - **Max quality (per Elementor device):** caps the resolution, for example 360p for cards. "Auto" picks the best quality for the size shown.
 - **Poster:** the Stream thumbnail (the time set in the Stream dashboard), a custom image, or none.

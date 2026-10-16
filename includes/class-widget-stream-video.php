@@ -57,6 +57,7 @@ class SM_Stream_Video_Widget extends Widget_Base {
 		$this->add_control( 'autoplay', array(
 			'label'       => __( 'Autoplay', 'saltmedia-stream-video' ),
 			'type'        => Controls_Manager::SWITCHER,
+			'default'     => 'yes',
 			'description' => __( 'Autoplaying videos are always muted (browser rule) and start when scrolled into view.', 'saltmedia-stream-video' ),
 		) );
 
@@ -74,14 +75,14 @@ class SM_Stream_Video_Widget extends Widget_Base {
 		) );
 
 		$this->add_control( 'loop', array(
-			'label' => __( 'Loop', 'saltmedia-stream-video' ),
-			'type'  => Controls_Manager::SWITCHER,
+			'label'   => __( 'Loop', 'saltmedia-stream-video' ),
+			'type'    => Controls_Manager::SWITCHER,
+			'default' => 'yes',
 		) );
 
 		$this->add_control( 'controls', array(
-			'label'   => __( 'Player controls', 'saltmedia-stream-video' ),
-			'type'    => Controls_Manager::SWITCHER,
-			'default' => 'yes',
+			'label' => __( 'Player controls', 'saltmedia-stream-video' ),
+			'type'  => Controls_Manager::SWITCHER,
 		) );
 
 		$this->add_responsive_control( 'quality', array(

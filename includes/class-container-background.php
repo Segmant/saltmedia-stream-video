@@ -58,6 +58,7 @@ class SM_Stream_Container_Background {
 		$element->add_control( 'sm_stream_bg_play_on_mobile', array(
 			'label'       => __( 'Play on mobile', 'saltmedia-stream-video' ),
 			'type'        => Controls_Manager::SWITCHER,
+			'default'     => 'yes',
 			'description' => __( 'Off: phones show the poster only and download no video.', 'saltmedia-stream-video' ),
 			'condition'   => $on,
 		) );
