@@ -2,7 +2,8 @@
  * Salt Media Stream Video: plays Cloudflare Stream HLS in [data-sm-stream] elements.
  *
  * Every video autoplays muted with no player controls:
- * - It starts when scrolled into view and pauses when out of view; nothing
+ * - It starts when scrolled into view (but not before the page has finished
+ *   loading and the browser is idle) and pauses when out of view; nothing
  *   downloads before it is in view.
  * - hls.js (bundled) is loaded on first use, in browsers that can run it;
  *   otherwise the browser's native HLS is used (iPhone/Safari); otherwise the
@@ -21,6 +22,25 @@
 	var config = window.smStreamVideo || {};
 	var hlsPromise = null;
 	var DEFAULT_ORDER = [ 'widescreen', 'desktop', 'laptop', 'tablet_extra', 'tablet', 'mobile_extra', 'mobile' ];
+
+	/**
+	 * Videos (and hls.js) only start once the page has fully loaded and the
+	 * browser is idle, so video processing doesn't compete with the page itself.
+	 */
+	var pageReady = new Promise( function ( resolve ) {
+		function whenIdle() {
+			if ( 'requestIdleCallback' in window ) {
+				window.requestIdleCallback( resolve, { timeout: 3000 } );
+			} else {
+				setTimeout( resolve, 1000 );
+			}
+		}
+		if ( 'complete' === document.readyState ) {
+			whenIdle();
+		} else {
+			window.addEventListener( 'load', whenIdle, { once: true } );
+		}
+	} );
 
 	var reduceMotion = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 	var saveData = !! ( navigator.connection && navigator.connection.saveData );
@@ -213,16 +233,24 @@
 		video.addEventListener( 'playing', function () { setState( el, 'playing' ); } );
 		video.addEventListener( 'pause', function () { setState( el, 'paused' ); } );
 
+		var inView = false;
+
 		observe( el, function ( visible ) {
+			inView = visible;
 			if ( visible ) {
-				setup().then( function ( ok ) {
-					if ( ! ok ) {
+				pageReady.then( function () {
+					if ( ! inView ) {
 						return;
 					}
-					var p = video.play();
-					if ( p && p.catch ) {
-						p.catch( function () {} );
-					}
+					return setup().then( function ( ok ) {
+						if ( ! ok || ! inView ) {
+							return;
+						}
+						var p = video.play();
+						if ( p && p.catch ) {
+							p.catch( function () {} );
+						}
+					} );
 				} );
 			} else if ( ready && ! video.paused ) {
 				video.pause();

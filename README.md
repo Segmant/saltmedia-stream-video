@@ -14,6 +14,7 @@ Paste any Stream link (watch, iframe, manifest or download link), a bare video I
 - **All videos:**
   - Autoplay muted with no player controls.
   - Download nothing until scrolled into view, then start; pause when out of view.
+  - Never start before the page has fully loaded and the browser is idle, so video processing (hls.js) doesn't compete with loading the page.
   - Show the poster only when the visitor has asked for reduced motion or turned on data saver.
   - Play on phones by default; turn "Play on mobile" off to show the poster only.
 - **Max quality (per Elementor device):** caps the resolution, for example 360p for cards. "Auto" picks the best quality for the size shown.
