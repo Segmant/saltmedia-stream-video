@@ -138,9 +138,10 @@ class SM_Stream_Container_Background {
 
 		SM_Stream_Elementor_Helpers::enqueue();
 
-		// Inline sizing so the layer is correct even before the stylesheet arrives.
+		// Inline sizing so the layer is correct even before the stylesheet arrives. transform:none
+		// cancels custom CSS written for Elementor's own background video (e.g. translate(-50%,-50%)).
 		return sprintf(
-			'<div class="elementor-background-video-container sm-stream-bg" aria-hidden="true" data-sm-stream="%1$s"><video class="sm-stream-bg__video" muted playsinline disableremoteplayback preload="none"%2$s style="position:absolute;inset:0;width:100%%;height:100%%;object-fit:cover"></video></div>',
+			'<div class="elementor-background-video-container sm-stream-bg" aria-hidden="true" data-sm-stream="%1$s"><video class="sm-stream-bg__video" muted playsinline disableremoteplayback preload="none"%2$s style="position:absolute;inset:0;width:100%%;height:100%%;max-width:none;margin:0;transform:none;object-fit:cover"></video></div>',
 			esc_attr( wp_json_encode( $config ) ),
 			$poster ? ' poster="' . esc_url( $poster ) . '"' : ''
 		);
